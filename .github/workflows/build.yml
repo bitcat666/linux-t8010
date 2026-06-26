@@ -1,4 +1,4 @@
-name: Build Linux for T8010
+name: Build Linux for T8010 (LLVM)
 
 on: [push, workflow_dispatch]
 
@@ -18,10 +18,10 @@ jobs:
       - name: Build Kernel
         run: |
           cd kernel
-          export ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
-          sudo apt-get update -qq && sudo apt-get install -y -qq gcc-aarch64-linux-gnu flex bison bc
-          make t8010_defconfig
-          make -j$(nproc) Image.gz dtbs
+          export ARCH=arm64
+          sudo apt-get update -qq && sudo apt-get install -y -qq clang lld flex bison bc
+          make LLVM=1 t8010_defconfig
+          make LLVM=1 -j$(nproc) Image.gz dtbs
           
       - name: Package
         run: |
