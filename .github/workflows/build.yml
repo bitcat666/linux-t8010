@@ -1,0 +1,28 @@
+name: Build Linux for T8010
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Kernel
+        run: |
+          export ARCH=arm64
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          sudo apt-get update -qq && sudo apt-get install -y -qq gcc-aarch64-linux-gnu flex bison bc
+          make t8010_defconfig
+          make -j$(nproc) Image.gz dtbs
+          
+      - name: Package
+        run: |
+          mkdir out
+          cp arch/arm64/boot/Image.gz out/
+          cp arch/arm64/boot/dts/apple/t8010-d11.dtb out/
+          
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-t8010
+          path: out/
