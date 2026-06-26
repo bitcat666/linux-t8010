@@ -8,10 +8,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Clone Linux Kernel
+        run: |
+          git clone --depth 1 https://github.com/HoolockLinux/linux.git kernel
+          
+      - name: Copy Config
+        run: cp arch/arm64/configs/t8010_defconfig kernel/arch/arm64/configs/
+      
       - name: Build Kernel
         run: |
-          export ARCH=arm64
-          export CROSS_COMPILE=aarch64-linux-gnu-
+          cd kernel
+          export ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
           sudo apt-get update -qq && sudo apt-get install -y -qq gcc-aarch64-linux-gnu flex bison bc
           make t8010_defconfig
           make -j$(nproc) Image.gz dtbs
@@ -19,8 +26,8 @@ jobs:
       - name: Package
         run: |
           mkdir out
-          cp arch/arm64/boot/Image.gz out/
-          cp arch/arm64/boot/dts/apple/t8010-d11.dtb out/
+          cp kernel/arch/arm64/boot/Image.gz out/
+          cp kernel/arch/arm64/boot/dts/apple/t8010-d11.dtb out/
           
       - uses: actions/upload-artifact@v4
         with:
